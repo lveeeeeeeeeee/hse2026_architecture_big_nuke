@@ -1,0 +1,40 @@
+@startuml usc
+skinparam actorStyle hollow
+'skinparam linetype ortho
+
+Actor "Автор" as author
+Actor "Сотрудник\nиздательства" as employee
+Actor "Клиент" as client
+
+package "ИС издательства" as system {
+    usecase "Опубликовать \nглаву" as publish_chapter
+    usecase "Просмотреть \nглаву" as view_chapter
+    usecase "Изменить \nглаву" as edit_chapter
+    usecase "Создать \nрецензию" as leave_comment
+    usecase "Обозреть \nрецензию" as check_review
+    usecase "Купить \nкнигу" as make_request
+    usecase "Отправить книгу \nклиенту" as complete_request
+}
+
+left to right direction
+
+complete_request .> make_request : include
+
+author -left-> publish_chapter
+
+author --> view_chapter
+employee --> view_chapter
+
+author --> edit_chapter
+
+employee --> leave_comment
+
+author --> check_review
+
+client -left-> make_request
+
+employee --> complete_request
+
+
+
+@enduml

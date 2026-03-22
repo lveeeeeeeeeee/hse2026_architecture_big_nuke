@@ -1,0 +1,49 @@
+@startuml c4-component
+
+!include <C4/C4_Container>
+!include <C4/C4_Component>
+
+skinparam linetype polyline
+
+Container(webApp, "Веб-интерфейс", "React")
+ContainerQueue(emailQueue, "Очередь задач для отправки E-mail", "Kafka")
+ContainerQueue(orderQueue, "Очередь задач для заказа книг", "Kafka")
+
+ContainerDb(storeServiceDB, "База данных магазина", "Postgres", "Хранит информацию о аккаунтах, наличии книг в переплёте, содержание книг и глав, рецензии")
+ContainerDb(paymentServiceDB, "База данных о платежах", "Postgres")
+
+Container_Boundary(backend, "Backend API") {
+    Component(contentComponent, "Сервис CMS (управление контентом)", "Python")
+    Component(storeComponent, "Сервис магазина", "Python")
+    Component(paymentComponent, "Сервис работы \nс платежами", "Python")
+    Component(restapi, "Контроллеры API", "FastAPI Python")
+    Component(auth, "Auth-модуль", "Python, JWT", "Аутентификация, роли и права")
+    Component(storeDbAccessComponent, "Слой доступа к базе данных магазина", "Python")
+    Component(paymentDbAccessComponent, "Слой доступа к базе данных платежей", "Python")
+    Component(purchaseTaskPubComponent, "Создатель задач покупки печатных книг", "Python")
+    Component(notifTaskPubComponent, "Создатель задач рассылки уведомлений", "Python")
+}
+
+Rel(webApp, restapi, "REST-запросы", "HTTPS/JSON")
+
+Rel(restapi, contentComponent, "CRUD Рецензий и глав", "TCP")
+Rel(restapi, storeComponent, "Данные о заказах", "TCP")
+Rel(restapi, paymentComponent, "Данные о платежах", "TCP")
+Rel(restapi, auth, "Авторизация", "TCP")
+
+Rel(contentComponent, notifTaskPubComponent, "Информация об уведомлениях", "TCP")
+Rel(storeComponent, purchaseTaskPubComponent, "Информация о заказах книг", "TCP")
+
+Rel(contentComponent, storeDbAccessComponent, "CRUD рецензий и глав", "TCP")
+Rel(storeComponent, storeDbAccessComponent, "Данные о заказах", "TCP")
+Rel(auth, storeDbAccessComponent, "Данные об аккаунтах, JWT-токены", "TCP")
+
+Rel(paymentComponent, paymentDbAccessComponent, "Данные о платежах", "TCP")
+
+Rel(storeDbAccessComponent, storeServiceDB, "Данные об аккаунтах, заказах, JWT-токены, CRUD рецензий и глав", "TCP")
+Rel(paymentDbAccessComponent, paymentServiceDB, "Данные о платежах", "TCP")
+
+Rel(notifTaskPubComponent, emailQueue, "Информация об уведомлениях", "TCP")
+Rel(purchaseTaskPubComponent, orderQueue, "Информация о заказах книг", "TCP")
+
+@enduml

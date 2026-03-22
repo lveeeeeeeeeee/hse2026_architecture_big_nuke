@@ -1,0 +1,25 @@
+@startuml c4-systemcontext
+
+!include <C4/C4_Context>
+
+Person(author, "Автор", "Публикуется\nчерез издательство")
+Person(employee, "Сотрудник\nиздательства", "Обрабатывает заказы")
+Person(reviewer, "Рецензент", "Создаёт рецензии \nдля глав")
+Person(client, "Клиент", "Покупает главы")
+
+System(targetSystem, "Система издательства", "Объединяет систему управления контентом и клиентский магазин")
+
+Rel(author, targetSystem, "CRUD глав")
+Rel(employee, targetSystem, "Обработка заказов")
+Rel(reviewer, targetSystem, "Создание рецензий")
+Rel(client, targetSystem, "Покупка глав")
+
+System_Ext(emailSystem, "Система E-mail", "Сторонний сервис для отправки E-mail уведомлений")
+System_Ext(paymentSystem, "Система платежей", "Сторонний сервис для осуществления финансовых действий")
+System_Ext(printSystem, "Система \nпечатного цеха", "Сторонний сервис для заказа печати книг")
+
+Rel(targetSystem, emailSystem, "Отправка уведомлений авторам")
+Rel(targetSystem, printSystem, "Отправка заказа печати книг")
+Rel(targetSystem, paymentSystem, "Запрос на совершение финансовых действий")
+
+@enduml

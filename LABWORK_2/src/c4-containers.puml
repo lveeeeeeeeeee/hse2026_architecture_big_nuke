@@ -1,0 +1,50 @@
+@startuml c4-containers
+
+!include <C4/C4_Container>
+skinparam linetype polyline
+
+Person(author, "Автор", "Публикуется\nчерез издательство")
+Person(employee, "Сотрудник\nиздательства", "Главный\nпользователь\nсистемы")
+Person(reviewer, "Рецензент")
+Person(client, "Клиент", "Покупатель глав")
+
+System_Ext(emailSystem, "Система E-mail", "Сторонний сервис для отправки E-mail уведомлений")
+System_Ext(paymentSystem, "Система платежей", "Сторонний сервис для осуществления финансовых действий")
+System_Ext(printSystem, "Система \nпечатного цеха", "Сторонний сервис для заказа печати книг")
+
+System_Boundary(c1, "Целевая система") {
+    Container(webApp, "Веб-интерфейс", "React")
+
+    ContainerDb(storeServiceDB, "База данных магазина", "Postgres", "Хранит информацию о аккаунтах, наличии книг в переплёте, содержание книг и глав, рецензии")
+    ContainerDb(paymentServiceDB, "База данных платёжной системы", "Postgres")
+    Container(backend, "Backend API", "Python FastAPI")
+    Container(emailModule, "Модуль E-Mail уведомлений", "Python XMPP сервер")
+    ContainerQueue(emailQueue, "Очередь задач для отправки E-mail", "Kafka")
+    ContainerQueue(orderQueue, "Очередь задач для заказа печати книг", "Kafka")
+    Container(orderWorker, "Фоновый модуль для заказа печати книг", "Python")
+}
+
+Rel(employee, webApp, "Обработка заказов", "HTTPS")
+Rel(reviewer, webApp, "Создание рецензий", "HTTPS")
+Rel(client, webApp, "Заказ книг", "HTTPS")
+Rel(author, webApp, "CRUD глав", "HTTPS")
+
+Rel(webApp, backend, "REST-запросы", "HTTPS/JSON")
+
+
+
+Rel(backend, storeServiceDB, "CRUD Рецензий и глав", "TCP/ORM/SQL")
+Rel(backend, emailQueue, "Уведомления о рецензиях", "TCP")
+Rel(emailQueue, emailModule, "E-mail уведомления о рецензиях", "TCP")
+Rel(backend, orderQueue, "Задачи заказа печати", "TCP")
+Rel(orderQueue, orderWorker, "Задачи заказа печати", "TCP")
+Rel(backend, storeServiceDB, "Данные о заказах", "TCP/ORM/SQL")
+Rel(backend, paymentServiceDB, "CRUD данных о платежах", "TCP/ORM/SQL")
+
+Rel(orderWorker, printSystem, "Данные с заказами \nпечати книг", "HTTPS/формат данных \nстороннего API")
+Rel(backend, paymentSystem, "Данные о платежах", "HTTPS/формат данных \nстороннего API")
+Rel(emailModule, emailSystem, "Уведомления о рецензиях", "HTTPS/XMPP")
+Rel(emailModule, storeServiceDB, "Чтение изменений о рецензиях", "TCP/ORM/SQL")
+
+
+@enduml

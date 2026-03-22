@@ -1,0 +1,48 @@
+@startuml usc
+skinparam actorStyle hollow
+skinparam linetype ortho
+skinparam ranksep 90
+
+Actor "Автор" as author
+Actor "Сотрудник\nиздательства" as employee
+Actor "Рецензент" as reviewer
+Actor "Клиент" as client
+
+reviewer ..> employee : << extend >>
+
+package "ИС издательства" as system {
+    usecase "Опубликовать \nглаву" as publish_chapter
+    usecase "Просмотреть \nглаву" as view_chapter
+    usecase "Изменить \nглаву" as edit_chapter
+    together {
+        usecase "Обозреть \nрецензию" as check_review
+        usecase "Создать \nрецензию" as leave_comment
+        usecase "Купить \nкнигу" as make_request
+        usecase "Обработать \nзаказ" as complete_request
+    }
+}
+
+left to right direction
+
+client -- make_request
+
+make_request .> complete_request : << include >>
+leave_comment ..> view_chapter : << include >>
+check_review .> leave_comment : << include >>
+
+author -- publish_chapter
+
+author -- view_chapter
+employee -- view_chapter
+
+author -- edit_chapter
+
+reviewer -- leave_comment
+
+author -- check_review
+
+employee -- complete_request
+
+
+
+@enduml
